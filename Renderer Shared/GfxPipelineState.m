@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "Device.h"
 #import "GfxPipelineState.h"
+#import "ShaderTypes.h"
 
 
 @implementation GfxPipelineState
@@ -31,6 +32,40 @@
     __desc = [[MTLRenderPipelineDescriptor alloc] init];
     __desc.sampleCount = 1;
     __desc.label = __name;
+    
+    __vertexDescType = VertexDescPosition3Texcoord2;
+}
+
+-(MTLVertexDescriptor *) getMtlVertexDesc : (VertexDescType) variant
+{
+    MTLVertexDescriptor* desc = [[MTLVertexDescriptor alloc] init];
+    
+    switch(variant)
+    {
+        case VertexDescPosition3Texcoord2:
+        {
+            desc.attributes[VertexAttributePosition].format = MTLVertexFormatFloat3;
+            desc.attributes[VertexAttributePosition].offset = 0;
+            desc.attributes[VertexAttributePosition].bufferIndex = BufferIndexMeshPositions;
+
+            desc.attributes[VertexAttributeTexcoord].format = MTLVertexFormatFloat2;
+            desc.attributes[VertexAttributeTexcoord].offset = 0;
+            desc.attributes[VertexAttributeTexcoord].bufferIndex = BufferIndexMeshGenerics;
+
+            desc.layouts[BufferIndexMeshPositions].stride = 12;
+            desc.layouts[BufferIndexMeshPositions].stepRate = 1;
+            desc.layouts[BufferIndexMeshPositions].stepFunction = MTLVertexStepFunctionPerVertex;
+
+            desc.layouts[BufferIndexMeshGenerics].stride = 8;
+            desc.layouts[BufferIndexMeshGenerics].stepRate = 1;
+            desc.layouts[BufferIndexMeshGenerics].stepFunction = MTLVertexStepFunctionPerVertex;
+            break;
+        }
+        default:
+            break;
+    }
+    
+    return desc;
 }
 
 -(void) compile
@@ -48,6 +83,8 @@
         __desc.fragmentFunction = pixelFunction;
     }
     
+    __desc.vertexDescriptor = [self getMtlVertexDesc:(__vertexDescType)];
+    
     NSError *error = NULL;
     
     __pso = [device newRenderPipelineStateWithDescriptor:__desc error:&error];
@@ -55,7 +92,6 @@
     {
         NSLog(@"Failed to created pipeline state, error %@", error);
     }
-    
 }
 
 @end

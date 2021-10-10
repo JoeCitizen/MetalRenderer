@@ -11,12 +11,19 @@
 
 @class Device;
 
+typedef NS_ENUM(NSInteger, VertexDescType)
+{
+    VertexDescPosition3Texcoord2  = 0,
+};
+
+
 @interface GfxPipelineState : NSObject
 
 -(nonnull instancetype) init :(Device*) device : (nonnull NSString*) name;
 
 -(void) compile;
 
+@property VertexDescType _vertexDescType;
 @property (readonly) NSString* _name;
 @property (readonly) Device* _device;
 

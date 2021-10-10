@@ -26,6 +26,8 @@
 		F0F74C5A2711558B00E9148B /* Device.m in Sources */ = {isa = PBXBuildFile; fileRef = F0F74C582711558B00E9148B /* Device.m */; };
 		F0F74C64271159F000E9148B /* GfxPipelineState.m in Sources */ = {isa = PBXBuildFile; fileRef = F0F74C63271159F000E9148B /* GfxPipelineState.m */; };
 		F0F74C65271159F000E9148B /* GfxPipelineState.m in Sources */ = {isa = PBXBuildFile; fileRef = F0F74C63271159F000E9148B /* GfxPipelineState.m */; };
+		F0F74C692712A42900E9148B /* DepthState.m in Sources */ = {isa = PBXBuildFile; fileRef = F0F74C682712A42900E9148B /* DepthState.m */; };
+		F0F74C6A2712A42900E9148B /* DepthState.m in Sources */ = {isa = PBXBuildFile; fileRef = F0F74C682712A42900E9148B /* DepthState.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,6 +57,8 @@
 		F0F74C5D271155E500E9148B /* Common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Common.h; sourceTree = "<group>"; };
 		F0F74C622711597800E9148B /* GfxPipelineState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GfxPipelineState.h; sourceTree = "<group>"; };
 		F0F74C63271159F000E9148B /* GfxPipelineState.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GfxPipelineState.m; sourceTree = "<group>"; };
+		F0F74C672712A39400E9148B /* DepthState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DepthState.h; sourceTree = "<group>"; };
+		F0F74C682712A42900E9148B /* DepthState.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DepthState.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +102,8 @@
 				F0F74C5D271155E500E9148B /* Common.h */,
 				F0F74C622711597800E9148B /* GfxPipelineState.h */,
 				F0F74C63271159F000E9148B /* GfxPipelineState.m */,
+				F0F74C672712A39400E9148B /* DepthState.h */,
+				F0F74C682712A42900E9148B /* DepthState.m */,
 			);
 			path = "Renderer Shared";
 			sourceTree = "<group>";
@@ -244,6 +250,7 @@
 				F0F74C2E2711535500E9148B /* GameViewController.m in Sources */,
 				F0F74C362711535500E9148B /* main.m in Sources */,
 				F0F74C592711558B00E9148B /* Device.m in Sources */,
+				F0F74C692712A42900E9148B /* DepthState.m in Sources */,
 				F0F74C2B2711535500E9148B /* AppDelegate.m in Sources */,
 				F0F74C4B2711535500E9148B /* Shaders.metal in Sources */,
 			);
@@ -258,6 +265,7 @@
 				F0F74C422711535500E9148B /* GameViewController.m in Sources */,
 				F0F74C472711535500E9148B /* main.m in Sources */,
 				F0F74C5A2711558B00E9148B /* Device.m in Sources */,
+				F0F74C6A2712A42900E9148B /* DepthState.m in Sources */,
 				F0F74C3F2711535500E9148B /* AppDelegate.m in Sources */,
 				F0F74C4C2711535500E9148B /* Shaders.metal in Sources */,
 			);
@@ -426,6 +434,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				"WARNING_CFLAGS[arch=*]" = "-Wno-nonnull";
 			};
 			name = Debug;
 		};
@@ -456,6 +465,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
+				"WARNING_CFLAGS[arch=*]" = "-Wno-nonnull";
 			};
 			name = Release;
 		};
@@ -484,6 +494,7 @@
 				PRODUCT_NAME = Renderer;
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				"WARNING_CFLAGS[arch=*]" = "-Wno-nonnull";
 			};
 			name = Debug;
 		};
@@ -512,6 +523,7 @@
 				PRODUCT_NAME = Renderer;
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				"WARNING_CFLAGS[arch=*]" = "";
 			};
 			name = Release;
 		};
