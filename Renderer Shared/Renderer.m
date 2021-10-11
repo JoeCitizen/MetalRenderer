@@ -10,6 +10,11 @@
 
 #import "Renderer.h"
 
+#import "Device.h"
+#import "GfxPipelineState.h"
+#import "DepthState.h"
+#import "RingBuffer.h"
+
 // Include header shared between C code here, which executes Metal API commands, and .metal files
 #import "ShaderTypes.h"
 
@@ -18,14 +23,15 @@ static const NSUInteger MaxBuffersInFlight = 3;
 @implementation Renderer
 {
     dispatch_semaphore_t _inFlightSemaphore;
-    id <MTLDevice> _device;
-    id <MTLCommandQueue> _commandQueue;
 
-    id <MTLBuffer> _dynamicUniformBuffer[MaxBuffersInFlight];
-    id <MTLRenderPipelineState> _pipelineState;
-    id <MTLDepthStencilState> _depthState;
+    Device* _device;
+    GfxPipelineState* _simplePso;
+    DepthState* _depthState;
+    RingBuffer* _ringBuffer;
+
+    RingBufferLoc _currentUpload;
+    
     id <MTLTexture> _colorMap;
-    MTLVertexDescriptor *_mtlVertexDescriptor;
 
     uint8_t _uniformBufferIndex;
 
@@ -41,7 +47,8 @@ static const NSUInteger MaxBuffersInFlight = 3;
     self = [super init];
     if(self)
     {
-        _device = view.device;
+        _device = [[Device alloc] initFromView:view];
+
         _inFlightSemaphore = dispatch_semaphore_create(MaxBuffersInFlight);
         [self _loadMetalWithView:view];
         [self _loadAssets];
@@ -58,71 +65,40 @@ static const NSUInteger MaxBuffersInFlight = 3;
     view.colorPixelFormat = MTLPixelFormatBGRA8Unorm_sRGB;
     view.sampleCount = 1;
 
-    _mtlVertexDescriptor = [[MTLVertexDescriptor alloc] init];
-
-    _mtlVertexDescriptor.attributes[VertexAttributePosition].format = MTLVertexFormatFloat3;
-    _mtlVertexDescriptor.attributes[VertexAttributePosition].offset = 0;
-    _mtlVertexDescriptor.attributes[VertexAttributePosition].bufferIndex = BufferIndexMeshPositions;
-
-    _mtlVertexDescriptor.attributes[VertexAttributeTexcoord].format = MTLVertexFormatFloat2;
-    _mtlVertexDescriptor.attributes[VertexAttributeTexcoord].offset = 0;
-    _mtlVertexDescriptor.attributes[VertexAttributeTexcoord].bufferIndex = BufferIndexMeshGenerics;
-
-    _mtlVertexDescriptor.layouts[BufferIndexMeshPositions].stride = 12;
-    _mtlVertexDescriptor.layouts[BufferIndexMeshPositions].stepRate = 1;
-    _mtlVertexDescriptor.layouts[BufferIndexMeshPositions].stepFunction = MTLVertexStepFunctionPerVertex;
-
-    _mtlVertexDescriptor.layouts[BufferIndexMeshGenerics].stride = 8;
-    _mtlVertexDescriptor.layouts[BufferIndexMeshGenerics].stepRate = 1;
-    _mtlVertexDescriptor.layouts[BufferIndexMeshGenerics].stepFunction = MTLVertexStepFunctionPerVertex;
-
-    id<MTLLibrary> defaultLibrary = [_device newDefaultLibrary];
-
-    id <MTLFunction> vertexFunction = [defaultLibrary newFunctionWithName:@"vertexShader"];
-
-    id <MTLFunction> fragmentFunction = [defaultLibrary newFunctionWithName:@"fragmentShader"];
-
-    MTLRenderPipelineDescriptor *pipelineStateDescriptor = [[MTLRenderPipelineDescriptor alloc] init];
-    pipelineStateDescriptor.label = @"MyPipeline";
-    pipelineStateDescriptor.sampleCount = view.sampleCount;
-    pipelineStateDescriptor.vertexFunction = vertexFunction;
-    pipelineStateDescriptor.fragmentFunction = fragmentFunction;
-    pipelineStateDescriptor.vertexDescriptor = _mtlVertexDescriptor;
-    pipelineStateDescriptor.colorAttachments[0].pixelFormat = view.colorPixelFormat;
-    pipelineStateDescriptor.depthAttachmentPixelFormat = view.depthStencilPixelFormat;
-    pipelineStateDescriptor.stencilAttachmentPixelFormat = view.depthStencilPixelFormat;
-
-    NSError *error = NULL;
-    _pipelineState = [_device newRenderPipelineStateWithDescriptor:pipelineStateDescriptor error:&error];
-    if (!_pipelineState)
+    // Pipeline States
     {
-        NSLog(@"Failed to created pipeline state, error %@", error);
+        _simplePso = [[GfxPipelineState alloc] init : _device : @"Simple PSO"];
+        _simplePso._vertexShader = @"vertexShader";
+        _simplePso._pixelShader = @"fragmentShader";
+        _simplePso._vertexDescType = VertexDescPosition3Texcoord2;
+        _simplePso._desc.colorAttachments[0].pixelFormat = view.colorPixelFormat;
+        _simplePso._desc.depthAttachmentPixelFormat = view.depthStencilPixelFormat;
+        _simplePso._desc.stencilAttachmentPixelFormat = view.depthStencilPixelFormat;
+        [_simplePso compile];
+    }
+    
+    // Depth State
+    {
+        _depthState = [[DepthState alloc] init : _device];
+        [_depthState create];
     }
 
-    MTLDepthStencilDescriptor *depthStateDesc = [[MTLDepthStencilDescriptor alloc] init];
-    depthStateDesc.depthCompareFunction = MTLCompareFunctionLess;
-    depthStateDesc.depthWriteEnabled = YES;
-    _depthState = [_device newDepthStencilStateWithDescriptor:depthStateDesc];
-
-    for(NSUInteger i = 0; i < MaxBuffersInFlight; i++)
+    // Constant Buffer
     {
-        _dynamicUniformBuffer[i] = [_device newBufferWithLength:sizeof(Uniforms)
-                                                        options:MTLResourceStorageModeShared];
-
-        _dynamicUniformBuffer[i].label = @"UniformBuffer";
+        _ringBuffer = [[RingBuffer alloc] initShared : _device : 1024*1024: @"constant upload"];
     }
-
-    _commandQueue = [_device newCommandQueue];
 }
 
 - (void)_loadAssets
 {
+    id<MTLDevice> mtlDevice = _device._mtlDevice;
+    
     /// Load assets into metal objects
 
     NSError *error;
 
     MTKMeshBufferAllocator *metalAllocator = [[MTKMeshBufferAllocator alloc]
-                                              initWithDevice: _device];
+                                              initWithDevice: mtlDevice];
 
     MDLMesh *mdlMesh = [MDLMesh newBoxWithDimensions:(vector_float3){4, 4, 4}
                                             segments:(vector_uint3){2, 2, 2}
@@ -131,7 +107,7 @@ static const NSUInteger MaxBuffersInFlight = 3;
                                            allocator:metalAllocator];
 
     MDLVertexDescriptor *mdlVertexDescriptor =
-    MTKModelIOVertexDescriptorFromMetal(_mtlVertexDescriptor);
+    MTKModelIOVertexDescriptorFromMetal([_simplePso getMtlVertexDesc]);
 
     mdlVertexDescriptor.attributes[VertexAttributePosition].name  = MDLVertexAttributePosition;
     mdlVertexDescriptor.attributes[VertexAttributeTexcoord].name  = MDLVertexAttributeTextureCoordinate;
@@ -139,7 +115,7 @@ static const NSUInteger MaxBuffersInFlight = 3;
     mdlMesh.vertexDescriptor = mdlVertexDescriptor;
 
     _mesh = [[MTKMesh alloc] initWithMesh:mdlMesh
-                                   device:_device
+                                   device:mtlDevice
                                     error:&error];
 
     if(!_mesh || error)
@@ -147,7 +123,7 @@ static const NSUInteger MaxBuffersInFlight = 3;
         NSLog(@"Error creating MetalKit mesh %@", error.localizedDescription);
     }
 
-    MTKTextureLoader* textureLoader = [[MTKTextureLoader alloc] initWithDevice:_device];
+    MTKTextureLoader* textureLoader = [[MTKTextureLoader alloc] initWithDevice:mtlDevice];
 
     NSDictionary *textureLoaderOptions =
     @{
@@ -170,8 +146,9 @@ static const NSUInteger MaxBuffersInFlight = 3;
 - (void)_updateGameState
 {
     /// Update any game state before encoding renderint commands to our drawable
-
-    Uniforms * uniforms = (Uniforms*)_dynamicUniformBuffer[_uniformBufferIndex].contents;
+    _currentUpload = [_ringBuffer alloc : sizeof(Uniforms) : 256];
+    
+    Uniforms * uniforms = (Uniforms*)_currentUpload.pMemory;
 
     uniforms->projectionMatrix = _projectionMatrix;
 
@@ -186,13 +163,14 @@ static const NSUInteger MaxBuffersInFlight = 3;
 
 - (void)drawInMTKView:(nonnull MTKView *)view
 {
+    id<MTLCommandQueue> mtlCmdQueue = _device._mtlCommandQueue;
     /// Per frame updates here
 
     dispatch_semaphore_wait(_inFlightSemaphore, DISPATCH_TIME_FOREVER);
 
     _uniformBufferIndex = (_uniformBufferIndex + 1) % MaxBuffersInFlight;
 
-    id <MTLCommandBuffer> commandBuffer = [_commandQueue commandBuffer];
+    id <MTLCommandBuffer> commandBuffer = [mtlCmdQueue commandBuffer];
     commandBuffer.label = @"MyCommand";
 
     __block dispatch_semaphore_t block_sema = _inFlightSemaphore;
@@ -219,15 +197,17 @@ static const NSUInteger MaxBuffersInFlight = 3;
 
         [renderEncoder setFrontFacingWinding:MTLWindingCounterClockwise];
         [renderEncoder setCullMode:MTLCullModeBack];
-        [renderEncoder setRenderPipelineState:_pipelineState];
-        [renderEncoder setDepthStencilState:_depthState];
+        [renderEncoder setRenderPipelineState:_simplePso._pso];
+        [renderEncoder setDepthStencilState:_depthState._depthState];
+        
+        NSUInteger constantOffset = sizeof(Uniforms) * _uniformBufferIndex;
 
-        [renderEncoder setVertexBuffer:_dynamicUniformBuffer[_uniformBufferIndex]
-                                offset:0
+        [renderEncoder setVertexBuffer:[_ringBuffer getMtlBuffer]
+                                offset:_currentUpload.offset
                                atIndex:BufferIndexUniforms];
 
-        [renderEncoder setFragmentBuffer:_dynamicUniformBuffer[_uniformBufferIndex]
-                                  offset:0
+        [renderEncoder setFragmentBuffer:[_ringBuffer getMtlBuffer]
+                                  offset:_currentUpload.offset
                                  atIndex:BufferIndexUniforms];
 
         for (NSUInteger bufferIndex = 0; bufferIndex < _mesh.vertexBuffers.count; bufferIndex++)

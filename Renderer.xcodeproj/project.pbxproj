@@ -28,6 +28,12 @@
 		F0F74C65271159F000E9148B /* GfxPipelineState.m in Sources */ = {isa = PBXBuildFile; fileRef = F0F74C63271159F000E9148B /* GfxPipelineState.m */; };
 		F0F74C692712A42900E9148B /* DepthState.m in Sources */ = {isa = PBXBuildFile; fileRef = F0F74C682712A42900E9148B /* DepthState.m */; };
 		F0F74C6A2712A42900E9148B /* DepthState.m in Sources */ = {isa = PBXBuildFile; fileRef = F0F74C682712A42900E9148B /* DepthState.m */; };
+		F0F74C6D2712BBDD00E9148B /* Buffer.m in Sources */ = {isa = PBXBuildFile; fileRef = F0F74C6C2712BBDD00E9148B /* Buffer.m */; };
+		F0F74C6E2712BBDD00E9148B /* Buffer.m in Sources */ = {isa = PBXBuildFile; fileRef = F0F74C6C2712BBDD00E9148B /* Buffer.m */; };
+		F0F74C712712C5F700E9148B /* Math.m in Sources */ = {isa = PBXBuildFile; fileRef = F0F74C702712C5F700E9148B /* Math.m */; };
+		F0F74C722712C5F700E9148B /* Math.m in Sources */ = {isa = PBXBuildFile; fileRef = F0F74C702712C5F700E9148B /* Math.m */; };
+		F0F74C752713F29200E9148B /* RingBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = F0F74C742713F29200E9148B /* RingBuffer.m */; };
+		F0F74C762713F29200E9148B /* RingBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = F0F74C742713F29200E9148B /* RingBuffer.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -59,6 +65,12 @@
 		F0F74C63271159F000E9148B /* GfxPipelineState.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GfxPipelineState.m; sourceTree = "<group>"; };
 		F0F74C672712A39400E9148B /* DepthState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DepthState.h; sourceTree = "<group>"; };
 		F0F74C682712A42900E9148B /* DepthState.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DepthState.m; sourceTree = "<group>"; };
+		F0F74C6B2712BBCD00E9148B /* Buffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Buffer.h; sourceTree = "<group>"; };
+		F0F74C6C2712BBDD00E9148B /* Buffer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Buffer.m; sourceTree = "<group>"; };
+		F0F74C6F2712C2E500E9148B /* Math.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Math.h; sourceTree = "<group>"; };
+		F0F74C702712C5F700E9148B /* Math.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Math.m; sourceTree = "<group>"; };
+		F0F74C732713F27F00E9148B /* RingBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RingBuffer.h; sourceTree = "<group>"; };
+		F0F74C742713F29200E9148B /* RingBuffer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RingBuffer.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +116,12 @@
 				F0F74C63271159F000E9148B /* GfxPipelineState.m */,
 				F0F74C672712A39400E9148B /* DepthState.h */,
 				F0F74C682712A42900E9148B /* DepthState.m */,
+				F0F74C6B2712BBCD00E9148B /* Buffer.h */,
+				F0F74C6C2712BBDD00E9148B /* Buffer.m */,
+				F0F74C6F2712C2E500E9148B /* Math.h */,
+				F0F74C702712C5F700E9148B /* Math.m */,
+				F0F74C732713F27F00E9148B /* RingBuffer.h */,
+				F0F74C742713F29200E9148B /* RingBuffer.m */,
 			);
 			path = "Renderer Shared";
 			sourceTree = "<group>";
@@ -250,8 +268,11 @@
 				F0F74C2E2711535500E9148B /* GameViewController.m in Sources */,
 				F0F74C362711535500E9148B /* main.m in Sources */,
 				F0F74C592711558B00E9148B /* Device.m in Sources */,
+				F0F74C712712C5F700E9148B /* Math.m in Sources */,
 				F0F74C692712A42900E9148B /* DepthState.m in Sources */,
+				F0F74C752713F29200E9148B /* RingBuffer.m in Sources */,
 				F0F74C2B2711535500E9148B /* AppDelegate.m in Sources */,
+				F0F74C6D2712BBDD00E9148B /* Buffer.m in Sources */,
 				F0F74C4B2711535500E9148B /* Shaders.metal in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -265,8 +286,11 @@
 				F0F74C422711535500E9148B /* GameViewController.m in Sources */,
 				F0F74C472711535500E9148B /* main.m in Sources */,
 				F0F74C5A2711558B00E9148B /* Device.m in Sources */,
+				F0F74C722712C5F700E9148B /* Math.m in Sources */,
 				F0F74C6A2712A42900E9148B /* DepthState.m in Sources */,
+				F0F74C762713F29200E9148B /* RingBuffer.m in Sources */,
 				F0F74C3F2711535500E9148B /* AppDelegate.m in Sources */,
+				F0F74C6E2712BBDD00E9148B /* Buffer.m in Sources */,
 				F0F74C4C2711535500E9148B /* Shaders.metal in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

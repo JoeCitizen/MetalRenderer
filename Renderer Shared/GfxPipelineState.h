@@ -22,6 +22,7 @@ typedef NS_ENUM(NSInteger, VertexDescType)
 -(nonnull instancetype) init :(Device*) device : (nonnull NSString*) name;
 
 -(void) compile;
+-(MTLVertexDescriptor *) getMtlVertexDesc;
 
 @property VertexDescType _vertexDescType;
 @property (readonly) NSString* _name;

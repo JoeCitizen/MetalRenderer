@@ -9,6 +9,7 @@
 #define Common_h
 
 #import <MetalKit/MetalKit.h>
+#import "Math.h"
 #import "Device.h"
 
 #endif /* Common_h */

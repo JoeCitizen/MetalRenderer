@@ -36,11 +36,11 @@
     __vertexDescType = VertexDescPosition3Texcoord2;
 }
 
--(MTLVertexDescriptor *) getMtlVertexDesc : (VertexDescType) variant
+-(MTLVertexDescriptor *) getMtlVertexDesc
 {
     MTLVertexDescriptor* desc = [[MTLVertexDescriptor alloc] init];
     
-    switch(variant)
+    switch(__vertexDescType)
     {
         case VertexDescPosition3Texcoord2:
         {
@@ -83,7 +83,7 @@
         __desc.fragmentFunction = pixelFunction;
     }
     
-    __desc.vertexDescriptor = [self getMtlVertexDesc:(__vertexDescType)];
+    __desc.vertexDescriptor = [self getMtlVertexDesc];
     
     NSError *error = NULL;
     
